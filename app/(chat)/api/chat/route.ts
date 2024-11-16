@@ -174,7 +174,7 @@ export async function POST(request: Request) {
             });
           }
 
-          const chainIds = ['1', '56'];
+          const chainIds = ['1', '56', '137'];
           for (const chainId of chainIds) {
             console.log('chain id', chainId);
             const res = await fetch(
