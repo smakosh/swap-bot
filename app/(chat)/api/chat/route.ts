@@ -77,15 +77,15 @@ export async function POST(request: Request) {
     experimental_activeTools: allTools,
     tools: {
       assetPrice: {
-        description: 'Get current price of a given asset',
+        description:
+          'Get current price of a given asset using its 3 letter ticker',
         parameters: z.object({
           asset: z.string(),
         }),
         execute: async ({ asset }) => {
+          console.log('fetching asset price', asset);
           const res = await fetch(
-            `https://www.deribit.com/api/v2/public/get_index_price?index_name=${
-              asset === 'BTC' ? 'btc_usd' : 'eth_usd'
-            }`,
+            `https://www.deribit.com/api/v2/public/get_index_price?index_name=${(asset + '').toLowerCase()}_usd`,
             {
               headers: {
                 Accept: 'application/json',
