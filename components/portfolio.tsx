@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/table';
 import { calcDigits, formatPrice } from "@/lib/format";
 import CopyToClipboard from "@/components/copy";
+import Image from "next/image";
 
 export default function Portfolio({
   result,
@@ -52,11 +53,22 @@ export default function Portfolio({
               <TableRow key={token.address}>
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">
-                    <img
-                      src={token.icon}
-                      alt={token.address}
-                      className="w-8 h-8 rounded-full"
-                    />
+                    {token.icon && (
+                      <Image
+                        width={32}
+                        height={32}
+                        src={token.icon}
+                        alt={token.address}
+                        className="w-8 h-8 rounded-full"
+                      />
+                    )}
+                    {!token.icon && (
+                      <div className="w-8 h-8 rounded-full bg-muted-foreground/10 flex items-center justify-center">
+                        <span className="text-sm text-muted-foreground">
+                          {token.symbol?.[0]}{token.symbol?.[1]}
+                        </span>
+                      </div>
+                    )}
                     <div>
                       <div className="flex items-center gap-2">
                         {token.symbol}
