@@ -21,6 +21,12 @@ import { generateTitleFromUserMessage } from '../../actions';
 import { createPublicClient, http } from 'viem';
 import { mainnet } from 'viem/chains';
 import { normalize } from 'viem/ens';
+import { cachify } from '@/lib/cache';
+
+const get = async (url: string, opts?: RequestInit) => {
+  const res = await fetch(url, opts);
+  return await res.json();
+};
 
 export const maxDuration = 60;
 
@@ -177,17 +183,21 @@ export async function POST(request: Request) {
           const chainIds = ['1', '56', '137'];
           for (const chainId of chainIds) {
             console.log('chain id', chainId);
-            const res = await fetch(
-              `https://api.1inch.dev/balance/v1.2/1/balances/${address}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${process.env.ONE_INCH_API_KEY}`,
-                  accept: 'application/json',
-                  'content-type': 'application/json',
-                },
-              }
+            const map = await cachify(
+              () =>
+                get(
+                  `https://api.1inch.dev/balance/v1.2/1/balances/${address}`,
+                  {
+                    headers: {
+                      Authorization: `Bearer ${process.env.ONE_INCH_API_KEY}`,
+                      accept: 'application/json',
+                      'content-type': 'application/json',
+                    },
+                  }
+                ),
+              `balance-${address}-${chainId}`
             );
-            const map = (await res.json()) as { [key: string]: string };
+            console.log('map', map);
 
             const values = Object.entries(map)
               .map(([key, value]) => ({
@@ -200,17 +210,20 @@ export async function POST(request: Request) {
             for (let i = 0; i < values.length; i++) {
               console.log('fetching token info for', values[i].address);
               const token = values[i];
-              const res = await fetch(
-                `https://api.1inch.dev/token/v1.2/${token.chainId}/custom/${token.address}`,
-                {
-                  headers: {
-                    Authorization: `Bearer ${process.env.ONE_INCH_API_KEY}`,
-                    accept: 'application/json',
-                    'content-type': 'application/json',
-                  },
-                }
-              );
-              const tokenInfo = (await res.json()) as {
+              const tokenInfo = (await cachify(
+                () =>
+                  get(
+                    `https://api.1inch.dev/token/v1.2/${token.chainId}/custom/${token.address}`,
+                    {
+                      headers: {
+                        Authorization: `Bearer ${process.env.ONE_INCH_API_KEY}`,
+                        accept: 'application/json',
+                        'content-type': 'application/json',
+                      },
+                    }
+                  ),
+                `token-info-${token.address}-${token.chainId}`
+              )) as {
                 symbol: string;
                 name: string;
                 address: string;
@@ -234,25 +247,22 @@ export async function POST(request: Request) {
 
             console.log('fetching prices for', chainId);
 
-            const priceResponse = await fetch(
-              `https://api.1inch.dev/price/v1.1/${chainId}`,
-              {
-                method: 'POST',
-                headers: {
-                  Authorization: 'Bearer fS3GZVT0S6XKEZPNe98WGiWCUCu3pZ8S',
-                  accept: 'application/json',
-                  'content-type': 'application/json',
-                },
-                body: JSON.stringify({
-                  tokens: values.map((token) => token.address),
-                  currency: 'USD',
+            const prices = await cachify(
+              () =>
+                get(`https://api.1inch.dev/price/v1.1/${chainId}`, {
+                  method: 'POST',
+                  headers: {
+                    Authorization: 'Bearer fS3GZVT0S6XKEZPNe98WGiWCUCu3pZ8S',
+                    accept: 'application/json',
+                    'content-type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    tokens: values.map((token) => token.address),
+                    currency: 'USD',
+                  }),
                 }),
-              }
+              `price-${address}-${chainId}`
             );
-
-            const prices = (await priceResponse.json()) as {
-              [key: string]: number;
-            };
 
             for (let i = 0; i < values.length; i++) {
               for (const key in prices) {
@@ -281,27 +291,29 @@ export async function POST(request: Request) {
           const responseMessagesWithoutIncompleteToolCalls =
             sanitizeResponseMessages(responseMessages);
 
-          await saveMessages({
-            messages: responseMessagesWithoutIncompleteToolCalls.map(
-              (message) => {
-                const messageId = generateUUID();
+          if (responseMessagesWithoutIncompleteToolCalls.length > 0) {
+            await saveMessages({
+              messages: responseMessagesWithoutIncompleteToolCalls.map(
+                (message) => {
+                  const messageId = generateUUID();
 
-                if (message.role === 'assistant') {
-                  streamingData.appendMessageAnnotation({
-                    messageIdFromServer: messageId,
-                  });
+                  if (message.role === 'assistant') {
+                    streamingData.appendMessageAnnotation({
+                      messageIdFromServer: messageId,
+                    });
+                  }
+
+                  return {
+                    id: messageId,
+                    chatId: id,
+                    role: message.role,
+                    content: message.content,
+                    createdAt: new Date(),
+                  };
                 }
-
-                return {
-                  id: messageId,
-                  chatId: id,
-                  role: message.role,
-                  content: message.content,
-                  createdAt: new Date(),
-                };
-              }
-            ),
-          });
+              ),
+            });
+          }
         } catch (error) {
           console.error('Failed to save chat');
         }
