@@ -74,14 +74,6 @@ export function Chat({
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
 
-  const formattedMessages = messages.filter((item) => {
-    return !(
-      item.role === 'assistant' &&
-      Array.isArray(item.toolInvocations) &&
-      item.toolInvocations.length === 0
-    );
-  });
-
   return (
     <>
       <div className="flex flex-col min-w-0 h-dvh bg-background">
@@ -92,7 +84,7 @@ export function Chat({
         >
           {messages.length === 0 && <Overview />}
 
-          {formattedMessages.map((message, index) => (
+          {messages.map((message, index) => (
             <PreviewMessage
               key={message.id}
               chatId={id}
