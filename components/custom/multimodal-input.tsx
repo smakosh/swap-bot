@@ -30,8 +30,8 @@ const suggestedActions = [
   },
   {
     title: 'Portfolio Balances',
-    label: 'Smakosh\'s Portfolio',
-    action: 'Portfolio of smakosh.eth',
+    label: "Greg's Portfolio",
+    action: 'Portfolio of gregan.eth',
   },
 ];
 

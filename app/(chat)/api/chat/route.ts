@@ -169,8 +169,6 @@ export async function POST(request: Request) {
           address: z.string(),
         }),
         execute: async ({ address }) => {
-          console.log('START fetching balances for', address);
-
           const all: TokenBalance[] = [];
           const originalAddress = address as string;
           if (address.includes('.eth')) {
@@ -181,7 +179,6 @@ export async function POST(request: Request) {
 
           const chainIds = ['1', '56', '137'];
           for (const chainId of chainIds) {
-            console.log('chain id', chainId);
             const map = await get(
               `https://api.1inch.dev/balance/v1.2/1/balances/${address}`,
               {
@@ -192,7 +189,6 @@ export async function POST(request: Request) {
                 },
               }
             );
-            console.log('map', map);
 
             const values = Object.entries(map)
               .map(([key, value]) => ({
@@ -203,7 +199,6 @@ export async function POST(request: Request) {
               .filter((token) => Number(token.amount) > 0) as TokenBalance[];
 
             for (let i = 0; i < values.length; i++) {
-              console.log('fetching token info for', values[i].address);
               const token = values[i];
               const tokenInfo = (await get(
                 `https://api.1inch.dev/token/v1.2/${token.chainId}/custom/${token.address}`,
@@ -236,8 +231,6 @@ export async function POST(request: Request) {
               token.icon = tokenInfo.logoURI;
             }
 
-            console.log('fetching prices for', chainId);
-
             const prices = await get(
               `https://api.1inch.dev/price/v1.1/${chainId}`,
               {
@@ -265,8 +258,6 @@ export async function POST(request: Request) {
 
             all.push(...values);
           }
-
-          console.log('DONE fetch values', all);
 
           return {
             address: originalAddress,
