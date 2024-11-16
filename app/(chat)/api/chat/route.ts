@@ -24,12 +24,17 @@ import { normalize } from 'viem/ens';
 
 export const maxDuration = 60;
 
-type AllowedTools = 'assetPrice' | 'swapTokens' | 'sendTokens';
+type AllowedTools =
+  | 'assetPrice'
+  | 'swapTokens'
+  | 'sendTokens'
+  | 'portfolioBalance';
 
 const assetPriceTools: AllowedTools[] = [
   'assetPrice',
   'swapTokens',
   'sendTokens',
+  'portfolioBalance',
 ];
 
 const allTools: AllowedTools[] = [...assetPriceTools];
@@ -138,6 +143,86 @@ export async function POST(request: Request) {
 
           return {
             ok: true,
+          };
+        },
+      },
+      portfolioBalance: {
+        description:
+          'Get the portfolio/token balances of a given address or ENS username',
+        parameters: z.object({
+          address: z.string(),
+        }),
+        execute: async ({ address }) => {
+          const originalAddress = address as string;
+          if (address.includes('.eth')) {
+            address = await publicClient.getEnsAddress({
+              name: normalize(address),
+            });
+          }
+          const res = await fetch(
+            `https://api.1inch.dev/balance/v1.2/1/balances/${address}`,
+            {
+              headers: {
+                Authorization: `Bearer ${process.env.ONE_INCH_API_KEY}`,
+                accept: 'application/json',
+                'content-type': 'application/json',
+              },
+            }
+          );
+          const map = (await res.json()) as { [key: string]: string };
+
+          const values = Object.entries(map)
+            .map(([key, value]) => ({
+              address: key,
+              amount: Number(value) / 1e18,
+            }))
+            .filter((token) => Number(token.amount) > 0) as {
+            address: string;
+            amount: number;
+            symbol?: string;
+            name?: string;
+            icon?: string;
+          }[];
+
+          for (let i = 0; i < values.length; i++) {
+            const token = values[i];
+            const res = await fetch(
+              `https://api.1inch.dev/token/v1.2/1/custom/${token.address}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${process.env.ONE_INCH_API_KEY}`,
+                  accept: 'application/json',
+                  'content-type': 'application/json',
+                },
+              }
+            );
+            const tokenInfo = (await res.json()) as {
+              symbol: string;
+              name: string;
+              address: string;
+              chainId: number;
+              decimals: number;
+              logoURI: string;
+              isFoT: boolean;
+              rating: number;
+              eip2612: boolean;
+              tags: {
+                value: string;
+                provider: string;
+              }[];
+              providers: string[];
+            };
+
+            token.symbol = tokenInfo.symbol;
+            token.name = tokenInfo.name;
+            token.icon = tokenInfo.logoURI;
+          }
+
+          console.log('fetch values', values);
+
+          return {
+            address: originalAddress,
+            values,
           };
         },
       },

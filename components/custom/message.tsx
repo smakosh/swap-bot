@@ -15,6 +15,7 @@ import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './weather';
 import { Skeleton } from '../ui/skeleton';
+import Portfolio from "@/components/portfolio";
 
 export const PreviewMessage = ({
   chatId,
@@ -72,6 +73,8 @@ export const PreviewMessage = ({
                         <p>Swapped {args.amount} {args.from} for {result} {args.to}</p>
                       ) : toolName === 'sendTokens' ? (
                         <p>Sent {args.amount} {args.from} to {args.to}!</p>
+                      ) : toolName === 'portfolioBalance' ? (
+                        <Portfolio values={result} />
                       ) : null}
                       {/* <pre>{JSON.stringify(result, null, 2)}</pre> */}
                     </div>
