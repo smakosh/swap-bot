@@ -280,7 +280,7 @@ export async function POST(request: Request) {
 
           return {
             address: originalAddress,
-            values: all,
+            values: all.filter((token) => token.symbol),
           };
         },
       },
