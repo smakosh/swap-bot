@@ -21,7 +21,6 @@ import { generateTitleFromUserMessage } from '../../actions';
 import { createPublicClient, http } from 'viem';
 import { mainnet } from 'viem/chains';
 import { normalize } from 'viem/ens';
-import { cachify } from '@/lib/cache';
 
 const get = async (url: string, opts?: RequestInit) => {
   const res = await fetch(url, opts);
@@ -183,19 +182,15 @@ export async function POST(request: Request) {
           const chainIds = ['1', '56', '137'];
           for (const chainId of chainIds) {
             console.log('chain id', chainId);
-            const map = await cachify(
-              () =>
-                get(
-                  `https://api.1inch.dev/balance/v1.2/1/balances/${address}`,
-                  {
-                    headers: {
-                      Authorization: `Bearer ${process.env.ONE_INCH_API_KEY}`,
-                      accept: 'application/json',
-                      'content-type': 'application/json',
-                    },
-                  }
-                ),
-              `balance-${address}-${chainId}`
+            const map = await get(
+              `https://api.1inch.dev/balance/v1.2/1/balances/${address}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${process.env.ONE_INCH_API_KEY}`,
+                  accept: 'application/json',
+                  'content-type': 'application/json',
+                },
+              }
             );
             console.log('map', map);
 
@@ -210,19 +205,15 @@ export async function POST(request: Request) {
             for (let i = 0; i < values.length; i++) {
               console.log('fetching token info for', values[i].address);
               const token = values[i];
-              const tokenInfo = (await cachify(
-                () =>
-                  get(
-                    `https://api.1inch.dev/token/v1.2/${token.chainId}/custom/${token.address}`,
-                    {
-                      headers: {
-                        Authorization: `Bearer ${process.env.ONE_INCH_API_KEY}`,
-                        accept: 'application/json',
-                        'content-type': 'application/json',
-                      },
-                    }
-                  ),
-                `token-info-${token.address}-${token.chainId}`
+              const tokenInfo = (await get(
+                `https://api.1inch.dev/token/v1.2/${token.chainId}/custom/${token.address}`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${process.env.ONE_INCH_API_KEY}`,
+                    accept: 'application/json',
+                    'content-type': 'application/json',
+                  },
+                }
               )) as {
                 symbol: string;
                 name: string;
@@ -247,21 +238,20 @@ export async function POST(request: Request) {
 
             console.log('fetching prices for', chainId);
 
-            const prices = await cachify(
-              () =>
-                get(`https://api.1inch.dev/price/v1.1/${chainId}`, {
-                  method: 'POST',
-                  headers: {
-                    Authorization: 'Bearer fS3GZVT0S6XKEZPNe98WGiWCUCu3pZ8S',
-                    accept: 'application/json',
-                    'content-type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                    tokens: values.map((token) => token.address),
-                    currency: 'USD',
-                  }),
+            const prices = await get(
+              `https://api.1inch.dev/price/v1.1/${chainId}`,
+              {
+                method: 'POST',
+                headers: {
+                  Authorization: 'Bearer fS3GZVT0S6XKEZPNe98WGiWCUCu3pZ8S',
+                  accept: 'application/json',
+                  'content-type': 'application/json',
+                },
+                body: JSON.stringify({
+                  tokens: values.map((token) => token.address),
+                  currency: 'USD',
                 }),
-              `price-${address}-${chainId}`
+              }
             );
 
             for (let i = 0; i < values.length; i++) {
