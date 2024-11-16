@@ -21,9 +21,9 @@ import { generateTitleFromUserMessage } from '../../actions';
 
 export const maxDuration = 60;
 
-type AllowedTools = 'assetPrice';
+type AllowedTools = 'assetPrice' | 'swapTokens'
 
-const assetPriceTools: AllowedTools[] = ['assetPrice'];
+const assetPriceTools: AllowedTools[] = ['assetPrice', 'swapTokens'];
 
 const allTools: AllowedTools[] = [...assetPriceTools];
 
@@ -96,6 +96,17 @@ export async function POST(request: Request) {
           const data = await res.json();
 
           return data.result?.index_price;
+        },
+      },
+      swapTokens: {
+        description: 'Swap tokens using Uniswap',
+        parameters: z.object({
+          from: z.string(),
+          to: z.string(),
+          amount: z.string(),
+        }),
+        execute: async ({ from, to, amount }) => {
+          // TODO
         },
       },
     },

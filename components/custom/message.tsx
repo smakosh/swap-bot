@@ -68,6 +68,8 @@ export const PreviewMessage = ({
                     <div key={toolCallId}>
                       {toolName === 'assetPrice' ? (
                         <p>Price: ${result}</p>
+                      ) : toolName === 'swapTokens' ? (
+                        <p>Swapped {args.amount} {args.from} for {result} {args.to}</p>
                       ) : null}
                       {/* <pre>{JSON.stringify(result, null, 2)}</pre> */}
                     </div>
