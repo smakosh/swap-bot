@@ -24,14 +24,14 @@ import { Textarea } from '../ui/textarea';
 
 const suggestedActions = [
   {
+    title: 'Crypto Price',
+    label: 'Price of Bitcoin',
+    action: 'Bitcoin price',
+  },
+  {
     title: 'Portfolio Balances',
     label: 'Smakosh\'s Portfolio',
     action: 'Portfolio of smakosh.eth',
-  },
-  {
-    title: 'Help me draft an essay',
-    label: 'about Silicon Valley',
-    action: 'Help me draft a short essay about Silicon Valley',
   },
 ];
 

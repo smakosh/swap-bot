@@ -8,14 +8,11 @@ import { Dispatch, SetStateAction } from 'react';
 import { Vote } from '@/db/schema';
 
 import { UIBlock } from './block';
-import { DocumentToolCall, DocumentToolResult } from './document';
 import { SparklesIcon } from './icons';
 import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
-import { PreviewAttachment } from './preview-attachment';
-import { Weather } from './weather';
 import { Skeleton } from '../ui/skeleton';
-import Portfolio from "@/components/portfolio";
+import Portfolio from '@/components/portfolio';
 
 export const PreviewMessage = ({
   chatId,
@@ -70,9 +67,14 @@ export const PreviewMessage = ({
                       {toolName === 'assetPrice' ? (
                         <p>Price: ${result}</p>
                       ) : toolName === 'swapTokens' ? (
-                        <p>Swapped {args.amount} {args.from} for {result} {args.to}</p>
+                        <p>
+                          Swapped {args.amount} {args.from} for {result}{' '}
+                          {args.to}
+                        </p>
                       ) : toolName === 'sendTokens' ? (
-                        <p>Sent {args.amount} {args.from} to {args.to}!</p>
+                        <p>
+                          Sent {args.amount} {args.from} to {args.to}!
+                        </p>
                       ) : toolName === 'portfolioBalance' ? (
                         <Portfolio result={result} />
                       ) : null}
