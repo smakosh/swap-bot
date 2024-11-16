@@ -35,7 +35,8 @@ type AllowedTools =
   | 'createDocument'
   | 'updateDocument'
   | 'requestSuggestions'
-  | 'getWeather';
+  | 'getWeather'
+  | 'assetPrice';
 
 const blocksTools: AllowedTools[] = [
   'createDocument',
@@ -45,7 +46,9 @@ const blocksTools: AllowedTools[] = [
 
 const weatherTools: AllowedTools[] = ['getWeather'];
 
-const allTools: AllowedTools[] = [...blocksTools, ...weatherTools];
+const assetPriceTools: AllowedTools[] = ['assetPrice']
+
+const allTools: AllowedTools[] = [...blocksTools, ...weatherTools, ...assetPriceTools];
 
 export async function POST(request: Request) {
   const {
@@ -96,6 +99,30 @@ export async function POST(request: Request) {
     maxSteps: 5,
     experimental_activeTools: allTools,
     tools: {
+      assetPrice: {
+        description: 'Get current BTC price',
+        parameters: z.object({
+          asset: z.string(),
+        }),
+        execute: async ({ asset }) => {
+          const res = await fetch(
+            `https://www.deribit.com/api/v2/public/get_index_price?index_name=${
+              asset === 'BTC' ? 'btc_usd' : 'eth_usd'
+            }`,
+            {
+              headers: {
+                Accept: 'application/json',
+              },
+              cache: 'no-cache',
+            }
+          )
+        
+          const data = await res.json()
+        
+          return data.result?.index_price
+
+        },
+      },
       getWeather: {
         description: 'Get the current weather at a location',
         parameters: z.object({

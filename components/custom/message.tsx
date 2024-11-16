@@ -65,8 +65,8 @@ export const PreviewMessage = ({
 
                   return (
                     <div key={toolCallId}>
-                      {toolName === 'getWeather' ? (
-                        <Weather weatherAtLocation={result} />
+                      {toolName === 'assetPrice' ? (
+                        <p>Bitches: {result}</p>
                       ) : toolName === 'createDocument' ? (
                         <DocumentToolResult
                           type="create"
