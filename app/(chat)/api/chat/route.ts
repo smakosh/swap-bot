@@ -90,7 +90,7 @@ export async function POST(request: Request) {
     model: customModel(model.apiIdentifier),
     system: systemPrompt,
     messages: coreMessages,
-    maxSteps: 5,
+    maxSteps: 1,
     experimental_activeTools: allTools,
     tools: {
       assetPrice: {
