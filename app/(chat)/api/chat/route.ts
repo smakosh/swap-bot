@@ -18,23 +18,26 @@ import {
 } from '@/lib/utils';
 
 import { generateTitleFromUserMessage } from '../../actions';
+import { createPublicClient, http } from 'viem';
+import { mainnet } from 'viem/chains';
+import { normalize } from 'viem/ens';
 
 export const maxDuration = 60;
 
-type AllowedTools = 'assetPrice' | 'swapTokens' | 'sendTokens'
+type AllowedTools = 'assetPrice' | 'swapTokens' | 'sendTokens';
 
-const assetPriceTools: AllowedTools[] = ['assetPrice', 'swapTokens', 'sendTokens'];
+const assetPriceTools: AllowedTools[] = [
+  'assetPrice',
+  'swapTokens',
+  'sendTokens',
+];
 
 const allTools: AllowedTools[] = [...assetPriceTools];
-
-import { createPublicClient, http } from 'viem'
-import { mainnet } from 'viem/chains'
-import { normalize } from "viem/ens";
 
 const publicClient = createPublicClient({
   chain: mainnet,
   transport: http(),
-})
+});
 
 export async function POST(request: Request) {
   const {
@@ -127,16 +130,15 @@ export async function POST(request: Request) {
         }),
         execute: async ({ from, to, amount }) => {
           if (to.includes('.eth')) {
-            const ensAddress = await publicClient.getEnsAddress({
+            to = await publicClient.getEnsAddress({
               name: normalize(to),
-            })
-            to = ensAddress;
+            });
           }
           // TODO
 
           return {
-            ok: true
-          }
+            ok: true,
+          };
         },
       },
     },
