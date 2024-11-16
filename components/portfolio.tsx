@@ -27,7 +27,7 @@ export default function Portfolio({
     }[];
   }
 }) {
-  const totalValue = result.values.reduce((sum, token) => sum + token.value, 0);
+  const totalValue = result.values.reduce((sum, token) => sum + (token.value || 0), 0);
 
   return (
     <Card className="w-full max-w-4xl mx-auto">
