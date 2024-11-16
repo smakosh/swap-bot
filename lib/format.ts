@@ -15,6 +15,7 @@ export function calcDigits(value: number, extraDigits = EXTRA_DIGITS): number {
 }
 
 export function formatPrice(v?: number, prefix = '$', suffix = ''): string {
+  if (v && v < 0.01) return `<${prefix}0.01`;
   const f = (v || 0).toLocaleString('en', {
     minimumFractionDigits: calcDigits(v ?? 0),
   });

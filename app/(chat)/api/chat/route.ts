@@ -182,6 +182,8 @@ export async function POST(request: Request) {
             symbol?: string;
             name?: string;
             icon?: string;
+            price?: number;
+            value?: number;
           }[];
 
           for (let i = 0; i < values.length; i++) {
@@ -216,6 +218,30 @@ export async function POST(request: Request) {
             token.symbol = tokenInfo.symbol;
             token.name = tokenInfo.name;
             token.icon = tokenInfo.logoURI;
+          }
+
+          const priceResponse = await fetch('https://api.1inch.dev/price/v1.1/1', {
+            method: 'POST',
+            headers: {
+              Authorization: 'Bearer fS3GZVT0S6XKEZPNe98WGiWCUCu3pZ8S',
+              accept: 'application/json',
+              'content-type': 'application/json',
+            },
+            body: JSON.stringify({
+              tokens: values.map((token) => token.address),
+              currency: 'USD',
+            }),
+          });
+
+          const prices = (await priceResponse.json()) as { [key: string]: number };
+
+          for (let i = 0; i < values.length; i++) {
+            for (const key in prices) {
+              if (values[i].address === key) {
+                values[i].price = Number(prices[key])
+                values[i].value = values[i].amount * (values[i].price || 0);
+              }
+            }
           }
 
           console.log('fetch values', values);

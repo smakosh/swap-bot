@@ -9,27 +9,34 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { formatPrice } from "@/lib/format";
+import { calcDigits, formatPrice } from "@/lib/format";
 import CopyToClipboard from "@/components/copy";
 
 export default function Portfolio({
-  values,
+  result,
 }: {
-  values: {
-    address: string;
-    amount: number;
-    symbol?: string;
-    name?: string;
-    icon?: string;
-  }[];
+  result: {
+    address: string
+    values: {
+      address: string;
+      amount: number;
+      value: number;
+      symbol?: string;
+      name?: string;
+      icon?: string;
+    }[];
+  }
 }) {
-  console.log('values', values);
-  const totalValue = values.reduce((sum, token) => sum + token.value, 0);
+  const totalValue = result.values.reduce((sum, token) => sum + token.value, 0);
 
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold">Crypto Portfolio</CardTitle>
+        <CardTitle className="text-2xl font-bold">Portfolio
+          <div className="text-sm text-muted-foreground font-mono">
+            {result.address}
+          </div>
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
@@ -41,7 +48,7 @@ export default function Portfolio({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {values.map((token) => (
+            {result.values.map((token) => (
               <TableRow key={token.address}>
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">
@@ -62,7 +69,7 @@ export default function Portfolio({
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
-                  {formatPrice(token.amount, '')}
+                  {token.amount.toFixed(calcDigits(token.amount))}
                 </TableCell>
                 <TableCell className="text-right">{formatPrice(token.value)}</TableCell>
               </TableRow>

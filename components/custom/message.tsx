@@ -74,7 +74,7 @@ export const PreviewMessage = ({
                       ) : toolName === 'sendTokens' ? (
                         <p>Sent {args.amount} {args.from} to {args.to}!</p>
                       ) : toolName === 'portfolioBalance' ? (
-                        <Portfolio values={result} />
+                        <Portfolio result={result} />
                       ) : null}
                       {/* <pre>{JSON.stringify(result, null, 2)}</pre> */}
                     </div>
