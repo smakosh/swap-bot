@@ -66,7 +66,7 @@ export const PreviewMessage = ({
                   return (
                     <div key={toolCallId}>
                       {toolName === 'assetPrice' ? (
-                        <p>Bitches: {result}</p>
+                        <p>Price: {result}</p>
                       ) : toolName === 'createDocument' ? (
                         <DocumentToolResult
                           type="create"
