@@ -70,6 +70,8 @@ export const PreviewMessage = ({
                         <p>Price: ${result}</p>
                       ) : toolName === 'swapTokens' ? (
                         <p>Swapped {args.amount} {args.from} for {result} {args.to}</p>
+                      ) : toolName === 'sendTokens' ? (
+                        <p>Sent {args.amount} {args.from} to {args.to}!</p>
                       ) : null}
                       {/* <pre>{JSON.stringify(result, null, 2)}</pre> */}
                     </div>

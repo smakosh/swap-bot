@@ -21,11 +21,20 @@ import { generateTitleFromUserMessage } from '../../actions';
 
 export const maxDuration = 60;
 
-type AllowedTools = 'assetPrice' | 'swapTokens'
+type AllowedTools = 'assetPrice' | 'swapTokens' | 'sendTokens'
 
-const assetPriceTools: AllowedTools[] = ['assetPrice', 'swapTokens'];
+const assetPriceTools: AllowedTools[] = ['assetPrice', 'swapTokens', 'sendTokens'];
 
 const allTools: AllowedTools[] = [...assetPriceTools];
+
+import { createPublicClient, http } from 'viem'
+import { mainnet } from 'viem/chains'
+import { normalize } from "viem/ens";
+
+const publicClient = createPublicClient({
+  chain: mainnet,
+  transport: http(),
+})
 
 export async function POST(request: Request) {
   const {
@@ -107,6 +116,27 @@ export async function POST(request: Request) {
         }),
         execute: async ({ from, to, amount }) => {
           // TODO
+        },
+      },
+      sendTokens: {
+        description: 'Send tokens to another address or ENS username',
+        parameters: z.object({
+          from: z.string(),
+          to: z.string(),
+          amount: z.string(),
+        }),
+        execute: async ({ from, to, amount }) => {
+          if (to.includes('.eth')) {
+            const ensAddress = await publicClient.getEnsAddress({
+              name: normalize(to),
+            })
+            to = ensAddress;
+          }
+          // TODO
+
+          return {
+            ok: true
+          }
         },
       },
     },
