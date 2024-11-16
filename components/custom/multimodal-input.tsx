@@ -24,9 +24,9 @@ import { Textarea } from '../ui/textarea';
 
 const suggestedActions = [
   {
-    title: 'What is the weather',
-    label: 'in San Francisco?',
-    action: 'What is the weather in San Francisco?',
+    title: 'Portfolio Balances',
+    label: 'Smakosh\'s Portfolio',
+    action: 'Portfolio of smakosh.eth',
   },
   {
     title: 'Help me draft an essay',
