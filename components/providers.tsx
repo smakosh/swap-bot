@@ -4,13 +4,13 @@ import { getDefaultConfig, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode } from 'react';
 import { WagmiProvider } from 'wagmi';
-import { sepolia, unichainSepolia } from 'wagmi/chains';
+import { mainnet, sepolia, polygon } from 'wagmi/chains';
 import '@rainbow-me/rainbowkit/styles.css';
 
 const config = getDefaultConfig({
-  appName: 'AI crypto bot',
+  appName: 'Defi Pilot',
   projectId: 'YOUR_PROJECT_ID',
-  chains: [unichainSepolia, sepolia],
+  chains: [mainnet, sepolia, polygon],
   ssr: true,
 });
 

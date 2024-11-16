@@ -6,9 +6,9 @@ import './globals.css';
 import { Providers } from '@/components/providers';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://chat.vercel.ai'),
-  title: 'Next.js Chatbot Template',
-  description: 'Next.js chatbot template using the AI SDK.',
+  metadataBase: new URL('https://defi-pilot.vercel.app'),
+  title: 'Defi Pilot',
+  description: 'Your Ai crypto companion.',
 };
 
 export const viewport = {
