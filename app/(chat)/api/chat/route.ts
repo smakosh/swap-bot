@@ -44,6 +44,17 @@ const publicClient = createPublicClient({
   transport: http(),
 });
 
+interface TokenBalance {
+  address: string;
+  amount: number;
+  symbol?: string;
+  name?: string;
+  icon?: string;
+  price?: number;
+  value?: number;
+  chainId: string;
+}
+
 export async function POST(request: Request) {
   const {
     id,
@@ -153,43 +164,21 @@ export async function POST(request: Request) {
           address: z.string(),
         }),
         execute: async ({ address }) => {
+          console.log('START fetching balances for', address);
+
+          const all: TokenBalance[] = [];
           const originalAddress = address as string;
           if (address.includes('.eth')) {
             address = await publicClient.getEnsAddress({
               name: normalize(address),
             });
           }
-          const res = await fetch(
-            `https://api.1inch.dev/balance/v1.2/1/balances/${address}`,
-            {
-              headers: {
-                Authorization: `Bearer ${process.env.ONE_INCH_API_KEY}`,
-                accept: 'application/json',
-                'content-type': 'application/json',
-              },
-            }
-          );
-          const map = (await res.json()) as { [key: string]: string };
 
-          const values = Object.entries(map)
-            .map(([key, value]) => ({
-              address: key,
-              amount: Number(value) / 1e18,
-            }))
-            .filter((token) => Number(token.amount) > 0) as {
-            address: string;
-            amount: number;
-            symbol?: string;
-            name?: string;
-            icon?: string;
-            price?: number;
-            value?: number;
-          }[];
-
-          for (let i = 0; i < values.length; i++) {
-            const token = values[i];
+          const chainIds = ['1', '56'];
+          for (const chainId of chainIds) {
+            console.log('chain id', chainId);
             const res = await fetch(
-              `https://api.1inch.dev/token/v1.2/1/custom/${token.address}`,
+              `https://api.1inch.dev/balance/v1.2/1/balances/${address}`,
               {
                 headers: {
                   Authorization: `Bearer ${process.env.ONE_INCH_API_KEY}`,
@@ -198,57 +187,90 @@ export async function POST(request: Request) {
                 },
               }
             );
-            const tokenInfo = (await res.json()) as {
-              symbol: string;
-              name: string;
-              address: string;
-              chainId: number;
-              decimals: number;
-              logoURI: string;
-              isFoT: boolean;
-              rating: number;
-              eip2612: boolean;
-              tags: {
-                value: string;
-                provider: string;
-              }[];
-              providers: string[];
+            const map = (await res.json()) as { [key: string]: string };
+
+            const values = Object.entries(map)
+              .map(([key, value]) => ({
+                address: key,
+                amount: Number(value) / 1e18,
+                chainId: chainId,
+              }))
+              .filter((token) => Number(token.amount) > 0) as TokenBalance[];
+
+            for (let i = 0; i < values.length; i++) {
+              console.log('fetching token info for', values[i].address);
+              const token = values[i];
+              const res = await fetch(
+                `https://api.1inch.dev/token/v1.2/${token.chainId}/custom/${token.address}`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${process.env.ONE_INCH_API_KEY}`,
+                    accept: 'application/json',
+                    'content-type': 'application/json',
+                  },
+                }
+              );
+              const tokenInfo = (await res.json()) as {
+                symbol: string;
+                name: string;
+                address: string;
+                chainId: number;
+                decimals: number;
+                logoURI: string;
+                isFoT: boolean;
+                rating: number;
+                eip2612: boolean;
+                tags: {
+                  value: string;
+                  provider: string;
+                }[];
+                providers: string[];
+              };
+
+              token.symbol = tokenInfo.symbol;
+              token.name = tokenInfo.name;
+              token.icon = tokenInfo.logoURI;
+            }
+
+            console.log('fetching prices for', chainId);
+
+            const priceResponse = await fetch(
+              `https://api.1inch.dev/price/v1.1/${chainId}`,
+              {
+                method: 'POST',
+                headers: {
+                  Authorization: 'Bearer fS3GZVT0S6XKEZPNe98WGiWCUCu3pZ8S',
+                  accept: 'application/json',
+                  'content-type': 'application/json',
+                },
+                body: JSON.stringify({
+                  tokens: values.map((token) => token.address),
+                  currency: 'USD',
+                }),
+              }
+            );
+
+            const prices = (await priceResponse.json()) as {
+              [key: string]: number;
             };
 
-            token.symbol = tokenInfo.symbol;
-            token.name = tokenInfo.name;
-            token.icon = tokenInfo.logoURI;
-          }
-
-          const priceResponse = await fetch('https://api.1inch.dev/price/v1.1/1', {
-            method: 'POST',
-            headers: {
-              Authorization: 'Bearer fS3GZVT0S6XKEZPNe98WGiWCUCu3pZ8S',
-              accept: 'application/json',
-              'content-type': 'application/json',
-            },
-            body: JSON.stringify({
-              tokens: values.map((token) => token.address),
-              currency: 'USD',
-            }),
-          });
-
-          const prices = (await priceResponse.json()) as { [key: string]: number };
-
-          for (let i = 0; i < values.length; i++) {
-            for (const key in prices) {
-              if (values[i].address === key) {
-                values[i].price = Number(prices[key])
-                values[i].value = values[i].amount * (values[i].price || 0);
+            for (let i = 0; i < values.length; i++) {
+              for (const key in prices) {
+                if (values[i].address === key) {
+                  values[i].price = Number(prices[key]);
+                  values[i].value = values[i].amount * (values[i].price || 0);
+                }
               }
             }
+
+            all.push(...values);
           }
 
-          console.log('fetch values', values);
+          console.log('DONE fetch values', all);
 
           return {
             address: originalAddress,
-            values,
+            values: all,
           };
         },
       },
