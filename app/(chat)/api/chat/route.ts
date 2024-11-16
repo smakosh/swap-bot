@@ -78,7 +78,7 @@ export async function POST(request: Request) {
     tools: {
       assetPrice: {
         description:
-          'Get current price of a given asset using its 3 letter ticker',
+          'Get current price of a given asset using its 3 or 4 letter ticker',
         parameters: z.object({
           asset: z.string(),
         }),
