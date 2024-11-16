@@ -13,6 +13,7 @@ import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
 import { Skeleton } from '../ui/skeleton';
 import Portfolio from '@/components/portfolio';
+import CryptoPriceDisplay from "@/components/price";
 
 export const PreviewMessage = ({
   chatId,
@@ -65,7 +66,7 @@ export const PreviewMessage = ({
                   return (
                     <div key={toolCallId}>
                       {toolName === 'assetPrice' ? (
-                        <p>Price: ${result}</p>
+                        <CryptoPriceDisplay price={result} asset={args.asset} />
                       ) : toolName === 'swapTokens' ? (
                         <p>
                           Swapped {args.amount} {args.from} for {result}{' '}
