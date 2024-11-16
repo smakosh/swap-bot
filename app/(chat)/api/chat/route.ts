@@ -83,7 +83,6 @@ export async function POST(request: Request) {
           asset: z.string(),
         }),
         execute: async ({ asset }) => {
-          console.log('fetching asset price', asset);
           const res = await fetch(
             `https://www.deribit.com/api/v2/public/get_index_price?index_name=${(asset + '').toLowerCase()}_usd`,
             {

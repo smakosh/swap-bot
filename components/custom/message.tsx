@@ -14,6 +14,7 @@ import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './weather';
+import { Skeleton } from '../ui/skeleton';
 
 export const PreviewMessage = ({
   chatId,
@@ -67,30 +68,8 @@ export const PreviewMessage = ({
                     <div key={toolCallId}>
                       {toolName === 'assetPrice' ? (
                         <p>Price: ${result}</p>
-                      ) : toolName === 'createDocument' ? (
-                        <DocumentToolResult
-                          type="create"
-                          result={result}
-                          block={block}
-                          setBlock={setBlock}
-                        />
-                      ) : toolName === 'updateDocument' ? (
-                        <DocumentToolResult
-                          type="update"
-                          result={result}
-                          block={block}
-                          setBlock={setBlock}
-                        />
-                      ) : toolName === 'requestSuggestions' ? (
-                        <DocumentToolResult
-                          type="request-suggestions"
-                          result={result}
-                          block={block}
-                          setBlock={setBlock}
-                        />
-                      ) : (
-                        <pre>{JSON.stringify(result, null, 2)}</pre>
-                      )}
+                      ) : null}
+                      {/* <pre>{JSON.stringify(result, null, 2)}</pre> */}
                     </div>
                   );
                 } else {
@@ -98,20 +77,14 @@ export const PreviewMessage = ({
                     <div
                       key={toolCallId}
                       className={cx({
-                        skeleton: ['getWeather'].includes(toolName),
+                        skeleton: ['assetPrice'].includes(toolName),
                       })}
                     >
-                      {toolName === 'getWeather' ? (
-                        <Weather />
-                      ) : toolName === 'createDocument' ? (
-                        <DocumentToolCall type="create" args={args} />
-                      ) : toolName === 'updateDocument' ? (
-                        <DocumentToolCall type="update" args={args} />
-                      ) : toolName === 'requestSuggestions' ? (
-                        <DocumentToolCall
-                          type="request-suggestions"
-                          args={args}
-                        />
+                      {toolName === 'assetPrice' ? (
+                        <div className="inline-flex items-center">
+                          <span>Price:</span>
+                          <Skeleton className="max-w-3 w-3 rounded-sm h-5" />
+                        </div>
                       ) : null}
                     </div>
                   );
@@ -120,7 +93,7 @@ export const PreviewMessage = ({
             </div>
           )}
 
-          {message.experimental_attachments && (
+          {/* {message.experimental_attachments && (
             <div className="flex flex-row gap-2">
               {message.experimental_attachments.map((attachment) => (
                 <PreviewAttachment
@@ -129,7 +102,7 @@ export const PreviewMessage = ({
                 />
               ))}
             </div>
-          )}
+          )} */}
 
           <MessageActions
             key={`action-${message.id}`}
